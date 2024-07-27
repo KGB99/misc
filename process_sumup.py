@@ -10,10 +10,16 @@ if __name__ == '__main__':
     parser.add_argument("--csv_file", required=True, type=str, help="Path to csv file of sales report from sumup")
     parser.add_argument("--german", required=False, type=bool, default=True, help="Bool flag whether the sumup return is in german or english, default is True")
     parser.add_argument("--process_refunds", required=False, type=bool, default=False, help="Bool flag whether refunds should be processed, default is False")
+    parser.add_argument("--calc_avgs", required=False, type=bool, default=False, help="Bool flag whether to calculate avg consumption")
+    parser.add_argument("--people", required=False, type=int, default=0, help="Number of people for the calculation of averages")
     args = parser.parse_args()
-    file_name = args.csv_file
+    FILE_NAME = args.csv_file
+    GERMAN = args.german
+    PROCESS_REFUNDS = args.process_refunds
+    CALC_AVGS = args.calc_avgs
+    PEOPLE = args.people
 
-    if (args.german):
+    if (GERMAN):
         quantity_str = "Menge"
         desc_str = "Beschreibung"
         price_str = "Preis (netto)"
@@ -25,8 +31,8 @@ if __name__ == '__main__':
         refunded_str = "Transaction refunded"
 
     # read csv and keep only relevant columns
-    df = pd.read_csv(file_name)    
-    if (args.process_refunds):
+    df = pd.read_csv(FILE_NAME)
+    if (PROCESS_REFUNDS):
         df = df[[quantity_str, desc_str, price_str, refunded]]
     else:
         df = df[[quantity_str, desc_str, price_str]]
@@ -48,5 +54,5 @@ if __name__ == '__main__':
     column_names = ['Item' , 'Quantity', 'Revenue']
     result_df = pd.DataFrame(result_array, columns=column_names)
     
-    result_df.to_csv(file_name.split(".csv")[0] + "_processed.csv", decimal=',')
+    result_df.to_csv(FILE_NAME.split(".csv")[0] + "_processed.csv", decimal=',')
     print("OK!")

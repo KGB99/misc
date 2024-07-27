@@ -10,14 +10,13 @@ if __name__ == '__main__':
     parser.add_argument("--csv_file", required=True, type=str, help="Path to csv file of sales report from sumup")
     parser.add_argument("--german", required=False, type=bool, default=True, help="Bool flag whether the sumup return is in german or english, default is True")
     parser.add_argument("--process_refunds", required=False, type=bool, default=False, help="Bool flag whether refunds should be processed, default is False")
-    parser.add_argument("--calc_avgs", required=False, type=bool, default=False, help="Bool flag whether to calculate avg consumption")
-    parser.add_argument("--people", required=False, type=int, default=0, help="Number of people for the calculation of averages")
+    parser.add_argument("--people", required=False, type=int, default=-1, help="Number of people for the calculation of averages, avgs are only calculated if this value is provided")
     args = parser.parse_args()
     FILE_NAME = args.csv_file
     GERMAN = args.german
     PROCESS_REFUNDS = args.process_refunds
-    CALC_AVGS = args.calc_avgs
     PEOPLE = args.people
+    CALC_AVGS = (PEOPLE > -1)
 
     if (GERMAN):
         quantity_str = "Menge"
@@ -49,9 +48,11 @@ if __name__ == '__main__':
     for key, df_item in dfs.items():
         quantity = df_item[quantity_str].sum()
         revenue = df_item[price_str].sum()
-        result_array.append([key, quantity, revenue])
+        if (CALC_AVGS):
+            avg_consumption = round(quantity/PEOPLE, 2)
+        result_array.append([key, quantity, revenue, avg_consumption] if CALC_AVGS else [key, quantity, revenue])
     
-    column_names = ['Item' , 'Quantity', 'Revenue']
+    column_names = ['Item' , 'Quantity', 'Revenue', 'avg_consumption'] if CALC_AVGS else ['Item' , 'Quantity', 'Revenue']
     result_df = pd.DataFrame(result_array, columns=column_names)
     
     result_df.to_csv(FILE_NAME.split(".csv")[0] + "_processed.csv", decimal=',')
